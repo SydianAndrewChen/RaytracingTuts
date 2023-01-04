@@ -38,4 +38,7 @@ inline double clamp(double x, double min, double max) {
     return x;
 }
 
+#include "vec3.h"
+#include "ray.h"
+
 #endif

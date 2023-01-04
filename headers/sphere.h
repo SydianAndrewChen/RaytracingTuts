@@ -1,19 +1,19 @@
 #ifndef SPHERE_H
 #define SPHERE_H
 
+#include "common.h"
 #include "hittable.h"
-#include "vec3.h"
-
 
 class Sphere: public Hittable{
 public:
     Sphere(){}
-    Sphere(Point3D && _center, double r):center(_center), radius(r){}; 
+    Sphere(Point3D && c, double r, shared_ptr<Material> mp):
+        center(c), radius(r), mat_ptr(mp){}; 
     virtual bool hit(const Ray& r, double t_min, double t_max, HitRecord& rec) const override;
     
     Point3D center;
     double radius;    
-
+    shared_ptr<Material> mat_ptr;
 };
 
 bool Sphere::hit(const Ray& r, double t_min, double t_max, HitRecord& rec) const{
@@ -39,6 +39,7 @@ bool Sphere::hit(const Ray& r, double t_min, double t_max, HitRecord& rec) const
     rec.normal = (rec.p - center) / radius;
     vec3 outward_normal = (rec.p - center) / radius;
     rec.set_face_normal(r, outward_normal);
+    rec.mat_ptr = mat_ptr;
 
     return true;
 }

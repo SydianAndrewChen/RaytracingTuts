@@ -1,14 +1,11 @@
 #include "headers/color.h"
-#include "headers/vec3.h"
-#include "headers/ray.h"
 #include "headers/hittable.h"
 #include "headers/hittable_list.h"
 #include "headers/sphere.h"
 #include "headers/camera.h"
-#include "headers/common.h"
+#include "headers/material.h"
 
 #include <iostream>
-
 Color ray_color(const Ray & r, const Hittable & world, int depth){
     HitRecord rec;
 
@@ -17,10 +14,12 @@ Color ray_color(const Ray & r, const Hittable & world, int depth){
         return Color(0,0,0);
 
     if (world.hit(r, 0.001, infinity, rec)){
-        // Point3D target = rec.p + rec.normal + random_in_unit_sphere();
-        // Point3D target = rec.p + rec.normal + random_unit_vector();
-        Point3D target = rec.p + rec.normal + random_in_hemisphere(rec.normal);
-        return 0.5 * ray_color(Ray(rec.p, target - rec.p), world, depth-1);
+        Ray scattered;
+        Color attenuation;
+        if (rec.mat_ptr->scatter(r, rec, attenuation, scattered)){
+            return attenuation * ray_color(scattered, world, depth-1);
+        }
+        return Color(0, 0, 0);
     }
     vec3 unit_direction = unit_vector(r.direction());
     auto t = 0.5*(unit_direction.y() + 1.0);
@@ -38,11 +37,19 @@ int main() {
 
     // World
     HittableList world;
-    world.add(make_shared<Sphere>(Point3D(0,0,-1), 0.5));
-    world.add(make_shared<Sphere>(Point3D(0,-100.5,-1), 100));
+    auto material_ground = make_shared<Lambertian>(Color(0.8, 0.8, 0.0));
+    auto material_center = make_shared<Lambertian>(Color(0.1, 0.2, 0.5));
+    auto material_left   = make_shared<Dielectric>(1.5);
+    auto material_right  = make_shared<Metal>(Color(0.8, 0.6, 0.2), 0.0);
+
+    world.add(make_shared<Sphere>(Point3D( 0.0, -100.5, -1.0), 100.0, material_ground));
+    world.add(make_shared<Sphere>(Point3D( 0.0,    0.0, -1.0),   0.5, material_center));
+    world.add(make_shared<Sphere>(Point3D(-1.0,    0.0, -1.0),   0.5, material_left));
+    world.add(make_shared<Sphere>(Point3D(-1.0,    0.0, -1.0),  -0.45, material_left));   
+    world.add(make_shared<Sphere>(Point3D( 1.0,    0.0, -1.0),   0.5, material_right));
 
     // Camera
-    Camera camera;
+    Camera camera(Point3D(-2,2,1), Point3D(0,0,-1), vec3(0,1,0), 90, aspect_ratio);
 
     // Render
 

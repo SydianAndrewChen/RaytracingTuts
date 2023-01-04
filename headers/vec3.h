@@ -3,7 +3,7 @@
 
 #include <cmath>
 #include <iostream>
-#include "common.h"
+// #include "common.h"
 
 using std::sqrt;
 
@@ -46,6 +46,12 @@ class vec3 {
             return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
         }
         
+        bool near_zero() const {
+            // Return true if the vector is close to zero in all dimensions.
+            const auto s = 1e-8;
+            return (fabs(e[0]) < s) && (fabs(e[1]) < s) && (fabs(e[2]) < s);
+        }
+
         inline static vec3 random() {
             return vec3(random_double(), random_double(), random_double());
         }
@@ -53,6 +59,7 @@ class vec3 {
         inline static vec3 random(double min, double max) {
             return vec3(random_double(min,max), random_double(min,max), random_double(min,max));
         }
+
     public:
         double e[3];
 };
@@ -101,6 +108,17 @@ inline vec3 unit_vector(vec3 v) {
     return v / v.length();
 }
 
+vec3 reflect(const vec3& v, const vec3& n) {
+    return v - 2*dot(v,n)*n;
+}
+
+vec3 refract(const vec3& uv, const vec3& n, double etai_over_etat) {
+    auto cos_theta = fmin(dot(-uv, n), 1.0);
+    vec3 r_out_perp =  etai_over_etat * (uv + cos_theta*n);
+    vec3 r_out_parallel = -sqrt(fabs(1.0 - r_out_perp.length_squared())) * n;
+    return r_out_perp + r_out_parallel;
+}
+
 vec3 random_in_unit_sphere() {
     while (true) {
         auto p = vec3::random(-1,1);
@@ -120,6 +138,8 @@ vec3 random_in_hemisphere(const vec3& normal) {
     else
         return -in_unit_sphere;
 }
+
+
 
 // Type aliases for vec3
 using Point3D = vec3;   // 3D point
