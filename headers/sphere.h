@@ -7,7 +7,7 @@
 class Sphere: public Hittable{
 public:
     Sphere(){}
-    Sphere(Point3D && c, double r, shared_ptr<Material> mp):
+    Sphere(Point3D c, double r, shared_ptr<Material> mp):
         center(c), radius(r), mat_ptr(mp){}; 
     virtual bool hit(const Ray& r, double t_min, double t_max, HitRecord& rec) const override;
     
