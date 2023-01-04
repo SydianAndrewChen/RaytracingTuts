@@ -4,7 +4,7 @@
 #include "headers/sphere.h"
 #include "headers/camera.h"
 #include "headers/material.h"
-
+#include <omp.h>
 #include <iostream>
 
 HittableList random_scene() {
@@ -98,11 +98,16 @@ int main() {
     // Render
 
     std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+    
+    // Parallelism
+    int thread_num = 8;
+    omp_set_num_threads(thread_num);
 
     for (int j = image_height-1; j >= 0; --j) {
         std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
         for (int i = 0; i < image_width; ++i) {
             Color pixel_color(0, 0, 0);
+            #pragma omp parallel for
             for (int s = 0; s < samples_per_pixel; ++s) {
                 auto u = (i + random_double()) / (image_width-1);
                 auto v = (j + random_double()) / (image_height-1);
