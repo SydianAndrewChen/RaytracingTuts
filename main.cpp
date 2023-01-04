@@ -5,6 +5,8 @@
 #include "headers/moving_sphere.h"
 #include "headers/camera.h"
 #include "headers/material.h"
+#include "headers/bvh.h"
+
 #include <omp.h>
 #include <iostream>
 
@@ -87,7 +89,8 @@ int main() {
     const int max_depth = 50;
 
     // World
-    auto world = random_scene();
+    auto scene = random_scene();
+    auto world = BVHNode(scene, 0.0, 1.0);
 
     // Camera
     Point3D lookfrom(13,2,3);
